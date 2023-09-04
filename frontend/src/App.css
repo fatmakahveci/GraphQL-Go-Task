@@ -1,0 +1,28 @@
+.container {
+    align-items: center;
+    padding: 30px 30px 30px 30px;
+}
+
+.nav-bar {
+    text-align: center;
+    justify-content: space-evenly;
+    display: flex;
+}
+
+.graphiql {
+    display: flex;
+}
+
+.button-active {
+    padding: 10px 15px;
+    margin: 10px;
+    background-color: green;
+    color: white;
+}
+
+.button-deactive {
+    padding: 10px 15px;
+    background-color: black;
+    color: white;
+    margin: 10px;
+}
