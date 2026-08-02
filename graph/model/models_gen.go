@@ -2,8 +2,16 @@
 
 package model
 
+import (
+	"bytes"
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type Character interface {
 	IsCharacter()
+	GetName() string
 }
 
 type Droid struct {
@@ -11,11 +19,140 @@ type Droid struct {
 	PrimaryFunction string `json:"primaryFunction"`
 }
 
-func (Droid) IsCharacter() {}
+func (Droid) IsCharacter()         {}
+func (this Droid) GetName() string { return this.Name }
 
 type Human struct {
 	Name          string `json:"name"`
 	HasLightsaber bool   `json:"hasLightsaber"`
 }
 
-func (Human) IsCharacter() {}
+func (Human) IsCharacter()         {}
+func (this Human) GetName() string { return this.Name }
+
+type Query struct {
+}
+
+type Episode string
+
+const (
+	EpisodeThePhantomMenace     Episode = "THE_PHANTOM_MENACE"
+	EpisodeAttackOfTheClones    Episode = "ATTACK_OF_THE_CLONES"
+	EpisodeRevengeOfTheSiths    Episode = "REVENGE_OF_THE_SITHS"
+	EpisodeANewHope             Episode = "A_NEW_HOPE"
+	EpisodeTheEmpireStrikesBack Episode = "THE_EMPIRE_STRIKES_BACK"
+	EpisodeReturnOfTheJedi      Episode = "RETURN_OF_THE_JEDI"
+	EpisodeTheForceAwakens      Episode = "THE_FORCE_AWAKENS"
+	EpisodeTheLastJedi          Episode = "THE_LAST_JEDI"
+	EpisodeTheRiseOfSkywalker   Episode = "THE_RISE_OF_SKYWALKER"
+)
+
+var AllEpisode = []Episode{
+	EpisodeThePhantomMenace,
+	EpisodeAttackOfTheClones,
+	EpisodeRevengeOfTheSiths,
+	EpisodeANewHope,
+	EpisodeTheEmpireStrikesBack,
+	EpisodeReturnOfTheJedi,
+	EpisodeTheForceAwakens,
+	EpisodeTheLastJedi,
+	EpisodeTheRiseOfSkywalker,
+}
+
+func (e Episode) IsValid() bool {
+	switch e {
+	case EpisodeThePhantomMenace, EpisodeAttackOfTheClones, EpisodeRevengeOfTheSiths, EpisodeANewHope, EpisodeTheEmpireStrikesBack, EpisodeReturnOfTheJedi, EpisodeTheForceAwakens, EpisodeTheLastJedi, EpisodeTheRiseOfSkywalker:
+		return true
+	}
+	return false
+}
+
+func (e Episode) String() string {
+	return string(e)
+}
+
+func (e *Episode) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Episode(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Episode", str)
+	}
+	return nil
+}
+
+func (e Episode) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *Episode) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e Episode) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
+
+type Side string
+
+const (
+	SideJedi Side = "JEDI"
+	SideSith Side = "SITH"
+)
+
+var AllSide = []Side{
+	SideJedi,
+	SideSith,
+}
+
+func (e Side) IsValid() bool {
+	switch e {
+	case SideJedi, SideSith:
+		return true
+	}
+	return false
+}
+
+func (e Side) String() string {
+	return string(e)
+}
+
+func (e *Side) UnmarshalGQL(v any) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Side(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Side", str)
+	}
+	return nil
+}
+
+func (e Side) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+func (e *Side) UnmarshalJSON(b []byte) error {
+	s, err := strconv.Unquote(string(b))
+	if err != nil {
+		return err
+	}
+	return e.UnmarshalGQL(s)
+}
+
+func (e Side) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	e.MarshalGQL(&buf)
+	return buf.Bytes(), nil
+}
