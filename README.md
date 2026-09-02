@@ -120,3 +120,10 @@ Currently one of the test is failing one FE, make the changes in the appropriate
 Wireframe :
 
 <img src="./example/example.png"># GraphQL-Go-Task
+
+## Project Resources
+
+- [Changelog](CHANGELOG.md)
+- [Contributing guide](.github/CONTRIBUTING.md)
+- [Security policy](.github/SECURITY.md)
+- [License](LICENSE.md)
