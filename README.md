@@ -1,5 +1,10 @@
 # GraphQL Full-Stack Task
 
+[![Go](https://img.shields.io/badge/Go-GraphQL-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![React](https://img.shields.io/badge/React-TypeScript-149ECA?logo=react&logoColor=white)](https://react.dev/)
+[![Last commit](https://img.shields.io/github/last-commit/fatmakahveci/GraphQL-Go-Task)](https://github.com/fatmakahveci/GraphQL-Go-Task/commits/main)
+[![License](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE.md)
+
 ## Purpose
  - See if a code base can be understood and modified
  - See if task descriptions can be understood
