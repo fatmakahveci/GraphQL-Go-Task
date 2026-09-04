@@ -1,129 +1,93 @@
 # GraphQL Full-Stack Task
 
-[![Go](https://img.shields.io/badge/Go-GraphQL-00ADD8?logo=go&logoColor=white)](https://go.dev/)
-[![React](https://img.shields.io/badge/React-TypeScript-149ECA?logo=react&logoColor=white)](https://react.dev/)
+[![Go](https://img.shields.io/badge/Go-1.25-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![React](https://img.shields.io/badge/React-18-149ECA?logo=react&logoColor=white)](https://react.dev/)
+[![GraphQL](https://img.shields.io/badge/GraphQL-gqlgen-E10098?logo=graphql&logoColor=white)](https://graphql.org/)
 [![Last commit](https://img.shields.io/github/last-commit/fatmakahveci/GraphQL-Go-Task)](https://github.com/fatmakahveci/GraphQL-Go-Task/commits/main)
 [![License](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE.md)
 
-## Purpose
- - See if a code base can be understood and modified
- - See if task descriptions can be understood
- - Find out strengths and weaknesses
- - Try to tackle every task and find out where you struggled and why
- - Be honest to yourself
+A compact full-stack exercise combining a Go GraphQL API with a React client. It demonstrates schema-driven resolvers, GraphQL AST inspection, enum handling, API integration, and interaction tests.
 
-## Backend
-The Backend is written in Go and providing a GraphQL API. It uses following technologies:
- - [gqlgen](https://github.com/99designs/gqlgen)
- - [graphql-go-tools](https://github.com/jensneuse/graphql-go-tools)
+## Features
 
-Before starting this task, make sure you get a quick overview of GraphQL: https://graphql.org/learn/.
+- Serves a typed GraphQL endpoint with `gqlgen`
+- Resolves a collection of Star Wars characters through the `heroes` query
+- Inspects schema object types and enum values with `graphql-go-tools`
+- Exposes schema introspection for development tooling
+- Fetches and renders API results in a React interface
+- Tests backend resolvers, schema parsing, data fetching, and UI interaction
 
-Currently all tests are failing and the goal will be to make them green again. For this, you will need to follow 3 tasks.
+## Architecture
 
-> Tests can be run using `go test ./...` command
-
-You can also start the server manually and send queries to the graphql endpoint:
-
+```text
+.
+├── graph/               GraphQL schema, generated code, models, and resolvers
+├── schemaparser/        GraphQL AST traversal helpers
+├── frontend/            Create React App client and Jest tests
+├── server.go            HTTP server on port 8085
+└── server_test.go       API-level backend tests
 ```
+
+The backend accepts GraphQL POST requests at `http://localhost:8085/query`. The frontend runs at `http://localhost:3000`, which is the origin allowed by the server's CORS configuration.
+
+## Requirements
+
+- Go 1.25 or newer
+- Node.js 20 or newer
+- npm
+
+## Run Locally
+
+Start the API:
+
+```bash
+git clone https://github.com/fatmakahveci/GraphQL-Go-Task.git
+cd GraphQL-Go-Task
+go mod download
 go run server.go
-curl --location --request POST 'localhost:8085/query' --header 'Content-Type: application/json' --data-raw '{"query":"{ heroes { name } }","variables":{}}
-curl --location --request POST 'localhost:8085/query' --header 'Content-Type: application/json' --data-raw '{"query":"{ types }","variables":{}}'
 ```
 
-### Task 1
-**The `heroes` query should return a hard-coded slice of Characters. See the test: https://github.com/pvormste/task-gql-full-stack/blob/main/server_test.go#L20**
+In a second terminal, start the frontend:
 
-Those are the Characters that should be returned by the server:
+```bash
+cd GraphQL-Go-Task/frontend
+npm ci
+npm start
 ```
-[
-    {
-        "name": "Luke Skywalker",
-        "hasLightsaver": true
-    },
-    {
-        "name": "Han Solo",
-        "hasLightsaver": false
-    },
-    {
-        "name": "C-3PO",
-        "primaryFunction": "Translator"
-    }
-]   
+
+Example request:
+
+```bash
+curl --request POST http://localhost:8085/query \
+  --header 'Content-Type: application/json' \
+  --data '{"query":"{ heroes { name } }"}'
 ```
-*Hint:* Look at the gqlgen documentation to find the right place to add the missing code: https://gqlgen.com/getting-started/#implement-the-resolvers
 
-### Task 2
-**The `types` query should return only the name of so-called "Object Types" of the GraphQL schema. But there's currently a bug in the code and it is returning also the name of the interface.
-   (See the test: https://github.com/pvormste/task-gql-full-stack/blob/main/server_test.go#L29).**
+## Testing
 
-Fix the implementation and make the tests related to this issue pass.
+```bash
+# Repository root: backend
+go test ./...
 
-*Hint:* Look inside the `schemaparser` package.
+# frontend/: client
+npm test -- --watchAll=false
+npm run build
+```
 
-### Task 3 (Bonus)
-**For the third task you need to extend the GraphQL schema with 2 enums and their values. See the GraphQL documentation on how to add 
-enums to a GraphQL schema: https://graphql.org/learn/schema/#enumeration-types**
+## GraphQL Surface
 
-The schema can be found in `graph/schema.graphqls`.
+- `heroes` returns character names and character-specific fields.
+- `types` returns GraphQL object type names without interface definitions.
+- `Episode` and `Side` exercise enum parsing.
 
-First Enum:
- - Episode
-   - THE_PHANTOM_MENACE
-   - ATTACK_OF_THE_CLONES
-   - REVENGE_OF_THE_SITHS
-   - A_NEW_HOPE
-   - THE_EMPIRE_STRIKES_BACK
-   - RETURN_OF_THE_JEDI
-   - THE_FORCE_AWAKENS
-   - THE_LAST_JEDI
-   - THE_RISE_OF_SKYWALKER 
+See [`graph/schema.graphqls`](graph/schema.graphqls) for the authoritative schema.
 
+## Contributing
 
-Second Enum:
- - Side
-   - JEDI
-   - SITH
-
-In the `schemaparser` package there is a function called `CountEnumValues`. The test for it is currently failing. Implement the package so that
-the test turns green again.
-
-**How to approach this task:**
- - The `ast.Document` type from graphql-go-tools has `RootNodes` of type `ast.Node` which are being iterated over in the `visitor`. See: https://github.com/jensneuse/graphql-go-tools/blob/master/pkg/ast/ast.go#L12
- - A `ast.Node` has a `NodeKind` and a `ref` (index) to the specific slice of the `NodeKind`. See: https://github.com/jensneuse/graphql-go-tools/blob/master/pkg/ast/ast.go#L31
- - A `EnumTypeDefinition` has a `EnumValuesDefinitionList` See: https://github.com/jensneuse/graphql-go-tools/blob/master/pkg/ast/ast_enum_type_definition.go#L25
-
-> **Info:** Changing the schema only won't change the behavior of the server! But it will be enough to make tests green.
-
-## Frontend
-
-The FrontEnd is written in Javascript and uses following technologies:
- - [React](https://reactjs.org/)
- - [Jest](https://jestjs.io/)
-
-### Task 1 (Make all the tests green).
-
-Currently one of the test is failing one FE, make the changes in the appropriate files to make all the test green.
-
-> Tests can be run using `npm test` command 
-
-
-### Task 2 (Add UI)
-
-- Use the currently available BE to render a [Graphiql](https://www.npmjs.com/package/graphiql) playground that helps query the graphql API.
-
-
-- Add UI to render the JSON response received from BE.
-- The component should change the the background color on click.
-- Cover the functionality with unit tests.
-
-Wireframe :
-
-<img src="./example/example.png"># GraphQL-Go-Task
+Read the [contributing guide](.github/CONTRIBUTING.md) and add or update tests with every behavioral change.
 
 ## Project Resources
 
 - [Changelog](CHANGELOG.md)
-- [Contributing guide](.github/CONTRIBUTING.md)
 - [Security policy](.github/SECURITY.md)
 - [License](LICENSE.md)
