@@ -23,7 +23,7 @@ A compact full-stack exercise combining a Go GraphQL API with a React client. It
 .
 ├── graph/               GraphQL schema, generated code, models, and resolvers
 ├── schemaparser/        GraphQL AST traversal helpers
-├── frontend/            Create React App client and Jest tests
+├── frontend/            Vite-powered React client and Jest tests
 ├── server.go            HTTP server on port 8085
 └── server_test.go       API-level backend tests
 ```
@@ -33,7 +33,7 @@ The backend accepts GraphQL POST requests at `http://localhost:8085/query`. The 
 ## Requirements
 
 - Go 1.25 or newer
-- Node.js 20 or newer
+- Node.js 22.12 or newer
 - npm
 
 ## Run Locally

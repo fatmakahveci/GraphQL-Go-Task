@@ -1,13 +1,12 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App';
 import Graphi from './Graphi';
 
-ReactDOM.render(
+createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
     <Graphi />
-  </React.StrictMode>,
-  document.getElementById('root')
+  </React.StrictMode>
 );
