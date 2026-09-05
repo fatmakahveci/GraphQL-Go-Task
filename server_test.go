@@ -5,24 +5,27 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/jensneuse/graphql-go-tools/pkg/graphql"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-var httpClient *http.Client
-
 func TestMainFunc(t *testing.T) {
-	go main()
+	server := httptest.NewServer(newHandler())
+	t.Cleanup(server.Close)
+	client := server.Client()
+	client.Timeout = 5 * time.Second
 
 	t.Run("should get all heroes", func(t *testing.T) {
 		gqlReqBody := graphql.Request{
 			Query: "{ heroes { name ...on Human { hasLightsaber } ...on Droid { primaryFunction } } }",
 		}
 
-		heroResponse := executeGraphQLRequest(t, gqlReqBody)
+		heroResponse := executeGraphQLRequest(t, client, server.URL, gqlReqBody)
 		assert.JSONEq(t, expectedHeroes, string(heroResponse.Data))
 	})
 
@@ -31,29 +34,26 @@ func TestMainFunc(t *testing.T) {
 			Query: "{ types }",
 		}
 
-		typesResponse := executeGraphQLRequest(t, gqlReqBody)
+		typesResponse := executeGraphQLRequest(t, client, server.URL, gqlReqBody)
 		assert.JSONEq(t, expectedTypes, string(typesResponse.Data))
 	})
 }
 
-func executeGraphQLRequest(t *testing.T, reqBody graphql.Request) GraphQLResponse {
+func executeGraphQLRequest(t *testing.T, client *http.Client, baseURL string, reqBody graphql.Request) GraphQLResponse {
 	t.Helper()
 
 	bodyBytes, err := json.Marshal(reqBody)
 	require.NoError(t, err)
 
-	req, err := http.NewRequest(http.MethodPost, "http://localhost:8085/query", bytes.NewBuffer(bodyBytes))
+	req, err := http.NewRequest(http.MethodPost, baseURL+"/query", bytes.NewBuffer(bodyBytes))
 	require.NoError(t, err)
 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
-	if httpClient == nil {
-		httpClient = &http.Client{}
-	}
-
-	resp, err := httpClient.Do(req)
+	resp, err := client.Do(req)
 	require.NoError(t, err)
+	defer resp.Body.Close()
 	require.Equalf(t, http.StatusOK, resp.StatusCode, "response status code is not 200")
 
 	respBody, err := ioutil.ReadAll(resp.Body)

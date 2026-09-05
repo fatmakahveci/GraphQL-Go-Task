@@ -65,6 +65,10 @@ curl --request POST http://localhost:8085/query \
 
 ## Testing
 
+Pull requests run separate backend and frontend quality jobs. Backend HTTP tests
+use an isolated ephemeral server instead of racing a background process on a fixed
+port. CI verifies modules, runs `go vet`, race-enabled tests, and builds both stacks.
+
 ```bash
 # Repository root: backend
 go test ./...
